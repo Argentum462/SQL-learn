@@ -1,11 +1,41 @@
 version: "3.3"
+
 services: 
+
   db:
     container_name: postgres
     image: postgres
+    networks:
+      overlay:
+        ipv4_address: 172.18.1.2
     ports:
       - "5432:5432"
     environment: 
-      - POSTGRES_PASSWORD=1234  
+      - POSTGRES_PASSWORD=1234
     volumes: 
       - "./db:/var/lib/postgresql/data"
+
+  gui:
+    container_name: pg_admin
+    depends_on: 
+      - "db"
+    image: dpage/pgadmin4
+    networks:
+      overlay:
+        ipv4_address: 172.18.1.3
+    ports:
+      - "80:80"
+    environment: 
+      - PGADMIN_DEFAULT_EMAIL=pg_admin@pg.ru
+      - PGADMIN_DEFAULT_PASSWORD=1234
+
+
+# Одна сеть должна быть для связи контейнеров между собой
+networks:
+  overlay:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.18.1.0/24
+
